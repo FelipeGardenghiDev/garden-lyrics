@@ -77,6 +77,80 @@ export function findRhymeSuggestions(word: string): string[] {
   return matched.slice(0, 10);
 }
 
+// Poetic Thesaurus with thematic emotional associations and evocative metaphors
+export const POETIC_THESAURUS: Record<string, { synonyms: string[]; metaphors: string[] }> = {
+  amor: {
+    synonyms: ['paixão', 'afeto', 'ardor', 'chama', 'ternura', 'devoção', 'querer', 'adoração'],
+    metaphors: ['fogo que arde sem se ver', 'porto seguro no temporal', 'mar revolto', 'sol no inverno'],
+  },
+  tristeza: {
+    synonyms: ['melancolia', 'dor', 'pesar', 'amargura', 'angústia', 'desolação', 'pranto', 'sombra'],
+    metaphors: ['noite sem estrelas', 'chuva de cinzas', 'mar em tempestade', 'eco em sala vazia'],
+  },
+  esperança: {
+    synonyms: ['fé', 'aurora', 'alvorada', 'sonho', 'promessa', 'luz', 'renascer', 'abrigo'],
+    metaphors: ['raio de sol entre nuvens', 'semente sob o asfalto', 'vento a favor'],
+  },
+  tempo: {
+    synonyms: ['instante', 'eterno', 'segundo', 'maré', 'vento', 'passado', 'memória', 'relógio'],
+    metaphors: ['rio que nunca volta', 'areia entre os dedos', 'ladrão silencioso'],
+  },
+  solidão: {
+    synonyms: ['vazio', 'silêncio', 'abandono', 'deserto', 'isolamento', 'abismo', 'cinza'],
+    metaphors: ['quarto sem janelas', 'eco sem resposta', 'ilha de névoa'],
+  },
+  liberdade: {
+    synonyms: ['voo', 'horizonte', 'asas', 'vento', 'amplidão', 'despreendimento', 'infinito'],
+    metaphors: ['pássaro que rompe a gaiola', 'oceano sem margem', 'céu aberto'],
+  },
+};
+
+/**
+ * Searches the poetic thesaurus for mood synonyms and poetic imagery.
+ */
+export function findThesaurusSuggestions(
+  term: string
+): { theme: string; synonyms: string[]; metaphors: string[] } | null {
+  const clean = term.toLowerCase().trim();
+  if (!clean) return null;
+
+  for (const [theme, data] of Object.entries(POETIC_THESAURUS)) {
+    if (theme === clean || data.synonyms.some((s) => s.toLowerCase() === clean)) {
+      return { theme, ...data };
+    }
+  }
+
+  // Partial match
+  for (const [theme, data] of Object.entries(POETIC_THESAURUS)) {
+    if (theme.includes(clean) || data.synonyms.some((s) => s.toLowerCase().includes(clean))) {
+      return { theme, ...data };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Formats a lyric project into Garden Teleprompt compatible stage text with section tags.
+ */
+export function formatLyricsForTeleprompt(project: LyricProject): string {
+  let output = `[Info]\n# ${project.title}\nArtista: ${project.artist}\nTom: ${project.key} | BPM: ${project.bpm}\n`;
+  if (project.notes) {
+    output += `Notas: ${project.notes}\n`;
+  }
+  output += '\n';
+
+  project.sections.forEach((sec) => {
+    output += `[${sec.label}]\n`;
+    sec.lines.forEach((line) => {
+      output += `${line}\n`;
+    });
+    output += '\n';
+  });
+
+  return output.trim();
+}
+
 export const INITIAL_LYRIC_PROJECT: LyricProject = {
   id: 'song-1',
   title: 'Jardim de Vidro',
